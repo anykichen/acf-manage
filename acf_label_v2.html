@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<title>ACF 管控卡 5cm×10cm</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #b0b8c1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px 60px;
+  font-family: 'SimSun', 'STSong', serif;
+  gap: 24px;
+}
+
+.page-title {
+  font-family: sans-serif;
+  font-size: 13px;
+  color: #fff;
+  letter-spacing: 1px;
+  background: rgba(0,0,0,0.3);
+  padding: 6px 16px;
+  border-radius: 4px;
+}
+
+/*
+  实物尺寸: 5cm × 10cm (宽 × 高)
+  屏幕渲染: 1cm = 56px → 280px × 560px
+  打印时用 @media print 切回真实cm
+*/
+.label {
+  width: 280px;
+  height: 560px;
+  background: #fff;
+  border: 1px solid #222;
+  display: flex;
+  flex-direction: row;
+  position: relative;
+  box-shadow: 3px 3px 12px rgba(0,0,0,0.35);
+  overflow: hidden;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   RIGHT COLUMN — 竖排信息区
+   图中最右侧：TPK logo + LOT + 型号/规格 + 保存期限
+   宽度约占标签 18%
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.right-col {
+  width: 50px;
+  border-left: 1px solid #222;
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  order: 2;
+}
+
+.right-logo {
+  height: 48px;
+  border-bottom: 1px solid #222;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 2px;
+}
+.tpk-text {
+  font-size: 13px;
+  font-weight: 900;
+  color: #c0392b;
+  font-style: italic;
+  letter-spacing: -0.5px;
+  line-height: 1;
+  font-family: Arial Black, sans-serif;
+}
+.tpk-star-img {
+  font-size: 9px;
+  color: #c0392b;
+}
+
+.right-lot {
+  flex: 2;
+  border-bottom: 1px solid #222;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 2px;
+}
+.right-lot span {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-size: 8px;
+  font-weight: 700;
+  color: #111;
+  letter-spacing: 1.5px;
+}
+
+.right-spec {
+  flex: 3;
+  border-bottom: 1px solid #222;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 2px;
+}
+.right-spec span {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-size: 7px;
+  color: #222;
+  letter-spacing: 0.5px;
+  text-align: center;
+}
+
+.right-shelf {
+  flex: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 2px;
+}
+.right-shelf span {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-size: 7px;
+  color: #222;
+  letter-spacing: 0.5px;
+  text-align: center;
+  line-height: 1.4;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   CENTER — 三次领用记录主体
+   order: 1
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.center-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  order: 1;
+}
+
+.usage-block {
+  flex: 1;
+  border-bottom: 1px solid #222;
+  display: flex;
+  flex-direction: row;
+}
+.usage-block:last-child {
+  border-bottom: none;
+}
+
+/* 次数标题列（竖排）*/
+.block-title {
+  width: 20px;
+  border-right: 1px solid #222;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: #f5f5f5;
+}
+.block-title span {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-size: 7.5px;
+  font-weight: 700;
+  color: #111;
+  letter-spacing: 2px;
+}
+
+/* 字段行组 */
+.block-fields {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.field-row {
+  flex: 1;
+  border-bottom: 0.5px solid #bbb;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  min-height: 0;
+}
+.field-row:last-child {
+  border-bottom: none;
+}
+
+.f-label {
+  width: 60px;
+  border-right: 0.5px solid #bbb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1px 2px;
+  font-size: 6.5px;
+  color: #222;
+  line-height: 1.2;
+  text-align: center;
+  flex-shrink: 0;
+  background: #fafafa;
+  white-space: nowrap;
+}
+
+.f-value {
+  flex: 1;
+  padding: 1px 3px;
+  font-size: 7px;
+  color: #333;
+  display: flex;
+  align-items: center;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   LEFT MARGIN — 注意事项竖排
+   order: 0
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.left-margin {
+  width: 18px;
+  border-right: 1px solid #222;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  order: 0;
+  background: #fff;
+}
+.left-margin span {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  font-size: 6px;
+  color: #444;
+  line-height: 1.3;
+  text-align: center;
+  letter-spacing: 0.3px;
+  transform: rotate(180deg);
+}
+
+/* ━━━━━━ FILLED / SCAN STATE ━━━━━━ */
+.f-value.filled {
+  font-size: 6.5px;
+  color: #1a1a1a;
+  font-weight: 500;
+}
+
+/* ━━━━━━ PRINT STYLES ━━━━━━ */
+@media print {
+  @page { size: 5cm 10cm; margin: 0; }
+  body { background: white; padding: 0; margin: 0; align-items: flex-start; }
+  .page-title, .controls, .note { display: none; }
+  .label {
+    width: 5cm;
+    height: 10cm;
+    box-shadow: none;
+    border: 0.3mm solid #000;
+  }
+  .right-col { width: 1.4cm; }
+  .left-margin { width: 0.5cm; }
+  .block-title { width: 0.55cm; }
+  .f-label { width: 1.65cm; font-size: 5pt; }
+  .f-value { font-size: 5.5pt; }
+  .tpk-text { font-size: 10pt; }
+  .right-lot span, .right-spec span, .right-shelf span { font-size: 5.5pt; }
+  .block-title span { font-size: 5.5pt; }
+  .left-margin span { font-size: 4.5pt; }
+}
+</style>
+</head>
+<body>
+
+<div class="page-title">ACF 管控卡预览 — 5 cm × 10 cm（屏幕等比 1cm=56px）</div>
+
+<div class="label" id="label">
+
+  <!-- LEFT MARGIN 注意事项 -->
+  <div class="left-margin">
+    <span>注意：回温时间≥30min，超过3次不能使用，冷藏保存，6个月</span>
+  </div>
+
+  <!-- CENTER BODY 三次领用 -->
+  <div class="center-body">
+
+    <!-- 第一次领用 -->
+    <div class="usage-block">
+      <div class="block-title"><span>第一次领用</span></div>
+      <div class="block-fields">
+        <div class="field-row">
+          <div class="f-label">领发开始时间</div>
+          <div class="f-value" id="t1-start"></div>
+        </div>
+        <div class="field-row">
+          <div class="f-label">归还时间</div>
+          <div class="f-value" id="t1-return"></div>
+        </div>
+        <div class="field-row">
+          <div class="f-label">回温时间</div>
+          <div class="f-value" id="t1-warmup"></div>
+        </div>
+        <div class="field-row">
+          <div class="f-label">使用人员</div>
+          <div class="f-value" id="t1-user"></div>
+        </div>
+        <div class="field-row">
+          <div class="f-label">备注</div>
+          <div class="f-value" id="t1-note"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 第二次领用 -->
+    <div class="usage-block">
+      <div class="block-title"><span>第二次领用</span></div>
+      <div class="block-fields">
+        <div class="field-row">
+          <div class="f-label">领发开始时间</div>
+          <div class="f-value" id="t2-start"></div>
+        </div>
+        <div class="field-row">
+          <div class="f-label">归还时间</div>
+          <div class="f-value" id="t2-return"></div>
+        </div>
+        <div class="field-row">
+          <div class="f-label">回温时间</div>
+          <div class="f-value" id="t2-warmup"></div>
+        </div>
+        <div class="field-row">
+          <div class="f-label">使用人员</div>
+          <div class="f-value" id="t2-user"></div>
+        </div>
+        <div class="field-row">
+          <div class="f-label">备注</div>
+          <div class="f-value" id="t2-note"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 第三次领用 -->
+    <div class="usage-block">
+      <div class="block-title"><span>第三次领用</span></div>
+      <div class="block-fields">
+        <div class="field-row">
+          <div class="f-label">领发开始时间</div>
+          <div class="f-value" id="t3-start"></div>
+        </div>
+        <div class="field-row">
+          <div class="f-label">归还时间</div>
+          <div class="f-value" id="t3-return"></div>
+        </div>
+        <div class="field-row">
+          <div class="f-label">回温时间</div>
+          <div class="f-value" id="t3-warmup"></div>
+        </div>
+        <div class="field-row">
+          <div class="f-label">使用人员</div>
+          <div class="f-value" id="t3-user"></div>
+        </div>
+        <div class="field-row">
+          <div class="f-label">备注</div>
+          <div class="f-value" id="t3-note"></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /center-body -->
+
+  <!-- RIGHT COLUMN -->
+  <div class="right-col">
+    <div class="right-logo">
+      <div class="tpk-text">TPK</div>
+      <div class="tpk-star-img">✦</div>
+    </div>
+    <div class="right-lot">
+      <span id="lot-display">LOT：</span>
+    </div>
+    <div class="right-spec">
+      <span id="spec-display">型号／规格</span>
+    </div>
+    <div class="right-shelf">
+      <span>保存期限<br>6个月</span>
+    </div>
+  </div>
+
+</div><!-- /label -->
+
+
+<!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+     SCAN DEMO PANEL (not part of label)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+<div class="controls" style="
+  background:#fff;
+  border-radius:10px;
+  padding:20px 24px;
+  width:280px;
+  box-shadow:0 2px 10px rgba(0,0,0,0.15);
+  font-family:sans-serif;
+">
+  <div style="font-size:12px;font-weight:700;color:#333;margin-bottom:14px;border-bottom:1px solid #eee;padding-bottom:8px;">
+    📱 扫码填充模拟
+  </div>
+
+  <!-- LOT 扫码 -->
+  <div style="margin-bottom:10px;">
+    <label style="font-size:10px;color:#666;display:block;margin-bottom:3px;">扫描 LOT 条码</label>
+    <div style="display:flex;gap:6px;">
+      <input id="scan-lot" type="text" placeholder="扫码或输入 LOT 号" style="
+        flex:1;border:1px solid #ccc;border-radius:4px;
+        padding:5px 8px;font-size:11px;
+      ">
+      <button onclick="fillLOT()" style="
+        background:#2563eb;color:#fff;border:none;
+        border-radius:4px;padding:5px 10px;font-size:11px;cursor:pointer;
+      ">填入</button>
+    </div>
+  </div>
+
+  <!-- 型号规格 -->
+  <div style="margin-bottom:10px;">
+    <label style="font-size:10px;color:#666;display:block;margin-bottom:3px;">型号 / 规格</label>
+    <div style="display:flex;gap:6px;">
+      <input id="scan-spec" type="text" placeholder="如 ACF-CP9731SA-25" style="
+        flex:1;border:1px solid #ccc;border-radius:4px;
+        padding:5px 8px;font-size:11px;
+      ">
+      <button onclick="fillSpec()" style="
+        background:#2563eb;color:#fff;border:none;
+        border-radius:4px;padding:5px 10px;font-size:11px;cursor:pointer;
+      ">填入</button>
+    </div>
+  </div>
+
+  <div style="font-size:10px;font-weight:700;color:#555;margin:12px 0 6px;border-top:1px solid #eee;padding-top:10px;">
+    使用记录（扫码自动填入当前时间）
+  </div>
+
+  <!-- 三次领用按钮 -->
+  <div style="display:flex;flex-direction:column;gap:6px;">
+
+    <div style="font-size:9.5px;color:#888;font-weight:600;">第一次领用</div>
+    <div style="display:flex;gap:5px;flex-wrap:wrap;">
+      <button onclick="fillTime('t1-start')" style="flex:1;min-width:80px;background:#16a34a;color:#fff;border:none;border-radius:4px;padding:5px 6px;font-size:10px;cursor:pointer;">▶ 领发开始</button>
+      <button onclick="fillTime('t1-return')" style="flex:1;min-width:80px;background:#f59e0b;color:#fff;border:none;border-radius:4px;padding:5px 6px;font-size:10px;cursor:pointer;">◀ 归还</button>
+    </div>
+    <div style="display:flex;gap:5px;flex-wrap:wrap;">
+      <input id="t1-user-input" placeholder="使用人员" style="flex:1;border:1px solid #ccc;border-radius:4px;padding:4px 6px;font-size:10px;">
+      <button onclick="fillUser(1)" style="background:#6366f1;color:#fff;border:none;border-radius:4px;padding:5px 8px;font-size:10px;cursor:pointer;">确认</button>
+    </div>
+
+    <div style="font-size:9.5px;color:#888;font-weight:600;margin-top:4px;">第二次领用</div>
+    <div style="display:flex;gap:5px;flex-wrap:wrap;">
+      <button onclick="fillTime('t2-start')" style="flex:1;min-width:80px;background:#16a34a;color:#fff;border:none;border-radius:4px;padding:5px 6px;font-size:10px;cursor:pointer;">▶ 领发开始</button>
+      <button onclick="fillTime('t2-return')" style="flex:1;min-width:80px;background:#f59e0b;color:#fff;border:none;border-radius:4px;padding:5px 6px;font-size:10px;cursor:pointer;">◀ 归还</button>
+    </div>
+    <div style="display:flex;gap:5px;flex-wrap:wrap;">
+      <input id="t2-user-input" placeholder="使用人员" style="flex:1;border:1px solid #ccc;border-radius:4px;padding:4px 6px;font-size:10px;">
+      <button onclick="fillUser(2)" style="background:#6366f1;color:#fff;border:none;border-radius:4px;padding:5px 8px;font-size:10px;cursor:pointer;">确认</button>
+    </div>
+
+    <div style="font-size:9.5px;color:#888;font-weight:600;margin-top:4px;">第三次领用</div>
+    <div style="display:flex;gap:5px;flex-wrap:wrap;">
+      <button onclick="fillTime('t3-start')" style="flex:1;min-width:80px;background:#16a34a;color:#fff;border:none;border-radius:4px;padding:5px 6px;font-size:10px;cursor:pointer;">▶ 领发开始</button>
+      <button onclick="fillTime('t3-return')" style="flex:1;min-width:80px;background:#f59e0b;color:#fff;border:none;border-radius:4px;padding:5px 6px;font-size:10px;cursor:pointer;">◀ 归还</button>
+    </div>
+    <div style="display:flex;gap:5px;flex-wrap:wrap;">
+      <input id="t3-user-input" placeholder="使用人员" style="flex:1;border:1px solid #ccc;border-radius:4px;padding:4px 6px;font-size:10px;">
+      <button onclick="fillUser(3)" style="background:#6366f1;color:#fff;border:none;border-radius:4px;padding:5px 8px;font-size:10px;cursor:pointer;">确认</button>
+    </div>
+  </div>
+
+  <button onclick="resetLabel()" style="
+    margin-top:14px;width:100%;background:#ef4444;color:#fff;
+    border:none;border-radius:4px;padding:7px;font-size:11px;cursor:pointer;
+  ">🔄 重置标签</button>
+</div>
+
+<div class="note" style="font-family:sans-serif;font-size:10px;color:#fff;text-align:center;max-width:280px;line-height:1.7;opacity:0.85;">
+  以上为屏幕预览（1cm = 56px）<br>
+  打印尺寸严格输出 5cm × 10cm<br>
+  所有时间使用曼谷时区（UTC+7）
+</div>
+
+<script>
+// 曼谷时间格式化
+function bangkokTime() {
+  return new Date().toLocaleString('zh-CN', {
+    timeZone: 'Asia/Bangkok',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit',
+    hour12: false
+  });
+}
+
+function fillLOT() {
+  const val = document.getElementById('scan-lot').value.trim();
+  if (!val) return;
+  document.getElementById('lot-display').textContent = 'LOT：' + val;
+}
+
+function fillSpec() {
+  const val = document.getElementById('scan-spec').value.trim();
+  if (!val) return;
+  document.getElementById('spec-display').textContent = val;
+}
+
+function fillTime(id) {
+  const el = document.getElementById(id);
+  el.textContent = bangkokTime();
+  el.classList.add('filled');
+
+  // 自动计算回温时间（领发开始填入后30min提醒）
+  const prefix = id.replace('-start','').replace('-return','');
+  if (id.endsWith('-return')) {
+    const startEl = document.getElementById(prefix + '-start');
+    const warmupEl = document.getElementById(prefix + '-warmup');
+    if (startEl.textContent) {
+      const start = new Date(startEl.textContent);
+      const end = new Date();
+      const diffMin = Math.round((end - start) / 60000);
+      warmupEl.textContent = diffMin + ' min';
+      warmupEl.classList.add('filled');
+      warmupEl.style.color = diffMin >= 30 ? '#16a34a' : '#dc2626';
+    }
+  }
+}
+
+function fillUser(n) {
+  const val = document.getElementById('t' + n + '-user-input').value.trim();
+  if (!val) return;
+  const el = document.getElementById('t' + n + '-user');
+  el.textContent = val;
+  el.classList.add('filled');
+}
+
+function resetLabel() {
+  ['t1','t2','t3'].forEach(t => {
+    ['start','return','warmup','user','note'].forEach(f => {
+      const el = document.getElementById(t + '-' + f);
+      if (el) { el.textContent = ''; el.classList.remove('filled'); el.style.color = ''; }
+    });
+  });
+  document.getElementById('lot-display').textContent = 'LOT：';
+  document.getElementById('spec-display').textContent = '型号／规格';
+  ['scan-lot','scan-spec','t1-user-input','t2-user-input','t3-user-input']
+    .forEach(id => { document.getElementById(id).value = ''; });
+}
+</script>
+
+</body>
+</html>

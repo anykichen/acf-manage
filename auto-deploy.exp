@@ -1,0 +1,205 @@
+#!/usr/bin/expect -f
+
+# ACF管控系统 - 自动部署脚本 (使用expect处理SSH密码)
+
+set timeout 300
+
+# 配置
+set SERVER "tpk@10.201.2.40"
+set PASSWORD "Cc88081/"
+set REMOTE_DIR "/home/tpk/acf"
+set LOCAL_DIR [file dirname [info script]]
+
+# 颜色输出
+proc color_output {color message} {
+    switch $color {
+        red      {puts "\033\[0;31m$message\033\[0m"}
+        green    {puts "\033\[0;32m$message\033\[0m"}
+        yellow   {puts "\033\[1;33m$message\033\[0m"}
+        blue     {puts "\033\[0;34m$message\033\[0m"}
+        default  {puts $message}
+    }
+}
+
+proc print_header {} {
+    color_output blue "========================================"
+    color_output blue "  ACF管控系统 - 服务器部署"
+    color_output blue "========================================"
+    puts ""
+}
+
+# 1. 检查本地环境
+color_output yellow "\[1/7\] 检查本地环境..."
+
+if {![file exists "docker-compose.yml"]} {
+    color_output red "✗ 未找到 docker-compose.yml 文件"
+    exit 1
+}
+
+if {![file exists "acf-backend/Dockerfile"]} {
+    color_output red "✗ 未找到后端 Dockerfile"
+    exit 1
+}
+
+if {![file exists "acf-frontend/Dockerfile"]} {
+    color_output red "✗ 未找到前端 Dockerfile"
+    exit 1
+}
+
+color_output green "✓ 本地环境检查通过\n"
+
+# 2. 测试服务器连接
+color_output yellow "\[2/7\] 测试服务器连接..."
+spawn ssh -o StrictHostKeyChecking=no $SERVER "echo 'Connection OK' && docker --version && docker-compose --version"
+expect {
+    "password:" {
+        send "$PASSWORD\r"
+        expect {
+            "Connection OK" {
+                color_output green "✓ 服务器连接成功"
+            }
+            timeout {
+                color_output red "✗ 连接超时"
+                exit 1
+            }
+        }
+    }
+    timeout {
+        color_output red "✗ 无法连接到服务器 $SERVER"
+        exit 1
+    }
+    eof {
+        wait
+    }
+}
+puts ""
+
+# 3. 检查Docker环境
+color_output yellow "\[3/7\] 检查服务器Docker环境..."
+spawn ssh -o StrictHostKeyChecking=no $SERVER "docker --version && docker-compose --version"
+expect {
+    "password:" {
+        send "$PASSWORD\r"
+        expect eof
+    }
+}
+color_output green "✓ Docker环境检查\n"
+
+# 4. 清理旧容器
+color_output yellow "\[4/7\] 清理服务器旧容器..."
+spawn ssh -o StrictHostKeyChecking=no $SERVER "cd $REMOTE_DIR 2>/dev/null && if [ -f docker-compose.yml ]; then docker-compose down -v 2>/dev/null || true; fi; echo 'Done'"
+expect {
+    "password:" {
+        send "$PASSWORD\r"
+        expect eof
+    }
+}
+color_output green "✓ 旧容器已清理\n"
+
+# 5. 上传文件
+color_output yellow "\[5/7\] 上传文件到服务器..."
+
+# 创建临时打包目录
+set temp_dir "/tmp/acf_deploy_[clock seconds]"
+exec mkdir -p $temp_dir
+exec cp -r acf-backend $temp_dir/
+exec cp -r acf-frontend $temp_dir/
+exec cp -r sql $temp_dir/
+exec cp docker-compose.yml $temp_dir/
+catch {exec cp -r acf $temp_dir/} result
+
+# 打包
+exec tar -czf /tmp/acf-deploy.tar.gz -C $temp_dir .
+
+color_output "  - 准备上传文件..."
+
+# 上传
+spawn scp -o StrictHostKeyChecking=no /tmp/acf-deploy.tar.gz $SERVER:/tmp/acf-deploy.tar.gz
+expect {
+    "password:" {
+        send "$PASSWORD\r"
+        expect {
+            "100%" {
+                color_output green "✓ 文件上传成功"
+            }
+            timeout {
+                color_output red "✗ 文件上传超时"
+                exit 1
+            }
+        }
+    }
+    timeout {
+        color_output red "✗ 文件上传超时"
+        exit 1
+    }
+    eof {
+        wait
+    }
+}
+puts ""
+
+# 6. 解压并启动
+color_output yellow "\[6/7\] 在服务器上解压并启动容器..."
+
+spawn ssh -o StrictHostKeyChecking=no $SERVER "mkdir -p $REMOTE_DIR && cd $REMOTE_DIR && tar -xzf /tmp/acf-deploy.tar.gz && rm -f /tmp/acf-deploy.tar.gz && chmod +x acf-backend/Dockerfile acf-frontend/Dockerfile docker-compose.yml"
+expect {
+    "password:" {
+        send "$PASSWORD\r"
+        expect eof
+    }
+}
+
+# 构建镜像
+color_output "  - 构建镜像(可能需要10-20分钟)..."
+spawn ssh -o StrictHostKeyChecking=no $SERVER "cd $REMOTE_DIR && docker-compose build"
+expect {
+    "password:" {
+        send "$PASSWORD\r"
+        set timeout 1200
+        expect eof
+    }
+}
+
+# 启动容器
+color_output "  - 启动容器..."
+spawn ssh -o StrictHostKeyChecking=no $SERVER "cd $REMOTE_DIR && docker-compose up -d"
+expect {
+    "password:" {
+        send "$PASSWORD\r"
+        expect eof
+    }
+}
+
+color_output green "✓ 容器启动成功\n"
+
+# 清理临时文件
+exec rm -f /tmp/acf-deploy.tar.gz
+exec rm -rf $temp_dir
+
+# 7. 验证服务
+color_output yellow "\[7/7\] 验证服务状态..."
+
+sleep 15
+
+spawn ssh -o StrictHostKeyChecking=no $SERVER "cd $REMOTE_DIR && docker-compose ps"
+expect {
+    "password:" {
+        send "$PASSWORD\r"
+        expect eof
+    }
+}
+
+puts ""
+color_output blue "========================================"
+color_output green "  部署完成！"
+color_output blue "========================================"
+puts ""
+color_output yellow "访问地址:"
+color_output "  前端: " green "http://10.201.2.40:80"
+color_output "  后端: " green "http://10.201.2.40:8080"
+color_output "  API文档: " green "http://10.201.2.40:8080/swagger-ui.html"
+puts ""
+color_output yellow "默认账号:"
+color_output "  系统管理员: admin / admin123"
+color_output "  数据库: root / root123"
+puts ""

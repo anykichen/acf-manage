@@ -1,0 +1,104 @@
+version: '3.8'
+
+services:
+  # MySQL数据库
+  mysql:
+    image: mysql:8.0
+    container_name: acf-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: acf_db
+      MYSQL_USER: acf_user
+      MYSQL_PASSWORD: acf123
+    ports:
+      - "23306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./sql/init_database.sql:/docker-entrypoint-initdb.d/01-init.sql
+      - ./sql/add_lot_rule_table.sql:/docker-entrypoint-initdb.d/02-lot-rule.sql
+      - ./sql/optimize_database.sql:/docker-entrypoint-initdb.d/03-optimize.sql
+    networks:
+      - acf-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # Redis缓存
+  redis:
+    image: redis:6-alpine
+    container_name: acf-redis
+    command: redis-server --requirepass redis123
+    ports:
+      - "26379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - acf-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "redis123", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # 后端服务
+  backend:
+    build:
+      context: ./acf-backend
+      dockerfile: Dockerfile
+    container_name: acf-backend
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: acf_db
+      DB_USERNAME: acf_user
+      DB_PASSWORD: acf123
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: redis123
+      JWT_SECRET: your-production-secret-key-must-be-at-least-256-bits-long-for-hs256-algorithm
+      JWT_EXPIRATION: 86400000
+      LOG_LEVEL: INFO
+      SWAGGER_ENABLED: false
+    ports:
+      - "28080:8080"
+    volumes:
+      - backend-logs:/var/log/acf
+    networks:
+      - acf-network
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # 前端服务
+  frontend:
+    build:
+      context: ./acf-frontend
+      dockerfile: Dockerfile
+    container_name: acf-frontend
+    ports:
+      - "8082:80"
+    networks:
+      - acf-network
+    depends_on:
+      - backend
+
+networks:
+  acf-network:
+    driver: bridge
+
+volumes:
+  mysql-data:
+    driver: local
+  redis-data:
+    driver: local
+  backend-logs:
+    driver: local
