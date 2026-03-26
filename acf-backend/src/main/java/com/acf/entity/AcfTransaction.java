@@ -107,6 +107,17 @@ public class AcfTransaction implements Serializable {
     private LocalDateTime transactionTime;
 
     /**
+     * 回温时长(分钟,别名)
+     */
+    public Integer getWarmupDurationMinutes() {
+        return warmupDuration;
+    }
+
+    public void setWarmupDurationMinutes(Integer warmupDurationMinutes) {
+        this.warmupDuration = warmupDurationMinutes;
+    }
+
+    /**
      * 交易单号(别名)
      */
     public String getTransactionNumber() {
@@ -139,7 +150,9 @@ public class AcfTransaction implements Serializable {
         this.operatorName = operator;
     }
 
-    // 手动添加getter/setter以确保编译通过
+    /**
+     * 手动添加getter/setter以确保编译通过
+     */
     public String getTransactionType() {
         return transactionType;
     }

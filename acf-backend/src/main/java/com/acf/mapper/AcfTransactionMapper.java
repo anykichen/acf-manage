@@ -26,6 +26,17 @@ public interface AcfTransactionMapper extends BaseMapper<AcfTransaction> {
     List<AcfTransaction> getByLotNumber(String lotNumber);
 
     /**
+     * 查询指定LOT号的最后发料记录
+     */
+    @Select("SELECT * FROM acf_transaction " +
+            "WHERE lot_number = #{lotNumber} " +
+            "AND transaction_type = 'OUTBOUND' " +
+            "AND deleted = 0 " +
+            "ORDER BY transaction_time DESC " +
+            "LIMIT 1")
+    AcfTransaction selectLastOutbound(String lotNumber);
+
+    /**
      * 查询指定LOT号的最后发料时间
      */
     @Select("SELECT transaction_time FROM acf_transaction " +
@@ -35,4 +46,11 @@ public interface AcfTransactionMapper extends BaseMapper<AcfTransaction> {
             "ORDER BY transaction_time DESC " +
             "LIMIT 1")
     LocalDateTime getLastOutboundTime(String lotNumber);
+
+    /**
+     * 插入交易记录(别名)
+     */
+    default int insertTransaction(AcfTransaction transaction) {
+        return insert(transaction);
+    }
 }

@@ -19,6 +19,11 @@ public interface AcfLotService extends IService<AcfLot> {
     AcfLot getByLotNumber(String lotNumber);
 
     /**
+     * 根据LOT号查询(别名)
+     */
+    AcfLot queryByLotNumber(String lotNumber);
+
+    /**
      * 生成LOT号
      */
     String generateLotNumber(String materialCode);

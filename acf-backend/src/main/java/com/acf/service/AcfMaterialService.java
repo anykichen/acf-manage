@@ -18,6 +18,11 @@ public interface AcfMaterialService extends IService<AcfMaterial> {
     AcfMaterial getByMaterialCode(String materialCode);
 
     /**
+     * 根据料号查询(别名)
+     */
+    AcfMaterial queryByMaterialCode(String materialCode);
+
+    /**
      * 批量删除
      */
     boolean batchDelete(List<Long> ids);

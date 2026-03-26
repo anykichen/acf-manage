@@ -29,6 +29,11 @@ public class AcfMaterialServiceImpl extends ServiceImpl<AcfMaterialMapper, AcfMa
     }
 
     @Override
+    public AcfMaterial queryByMaterialCode(String materialCode) {
+        return getByMaterialCode(materialCode);
+    }
+
+    @Override
     public boolean batchDelete(List<Long> ids) {
         if (ids == null || ids.isEmpty()) {
             return true;

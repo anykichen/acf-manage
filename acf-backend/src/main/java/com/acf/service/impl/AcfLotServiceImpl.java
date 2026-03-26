@@ -41,6 +41,11 @@ public class AcfLotServiceImpl extends ServiceImpl<AcfLotMapper, AcfLot> impleme
     }
 
     @Override
+    public AcfLot queryByLotNumber(String lotNumber) {
+        return getByLotNumber(lotNumber);
+    }
+
+    @Override
     public String generateLotNumber(String materialCode) {
         // 检查料号是否存在
         AcfMaterial material = materialService.getByMaterialCode(materialCode);
