@@ -67,6 +67,31 @@ public class AcfLot implements Serializable {
     private Integer usageTimes;
 
     /**
+     * 最大使用次数
+     */
+    private Integer maxUsageTimes;
+
+    /**
+     * 入库时间
+     */
+    private LocalDateTime inStockTime;
+
+    /**
+     * 回温开始时间
+     */
+    private LocalDateTime warmupStartTime;
+
+    /**
+     * 回温结束时间
+     */
+    private LocalDateTime warmupEndTime;
+
+    /**
+     * 创建人
+     */
+    private String createdBy;
+
+    /**
      * 储位
      */
     private String warehouseLocation;
@@ -85,6 +110,73 @@ public class AcfLot implements Serializable {
 
     public void setStatus(String status) {
         this.lotStatus = status;
+    }
+
+    /**
+     * 入库时间(别名,为了兼容InboundService)
+     */
+    public LocalDateTime getInStockTime() {
+        return inStockTime != null ? inStockTime : inboundDate;
+    }
+
+    public void setInStockTime(LocalDateTime inStockTime) {
+        this.inStockTime = inStockTime;
+        this.inboundDate = inStockTime;
+    }
+
+    /**
+     * 过期时间(别名,为了兼容AlertService)
+     */
+    public LocalDateTime getExpireTime() {
+        return expireDate;
+    }
+
+    public void setExpireTime(LocalDateTime expireTime) {
+        this.expireDate = expireTime;
+    }
+
+    /**
+     * 数量(别名,为了兼容InboundService)
+     */
+    public Integer getQuantity() {
+        return initialQuantity != null ? initialQuantity.intValue() : null;
+    }
+
+    public void setQuantity(Integer quantity) {
+        this.initialQuantity = quantity != null ? BigDecimal.valueOf(quantity) : null;
+    }
+
+    /**
+     * 使用次数(别名)
+     */
+    public Integer getUsageCount() {
+        return usageTimes;
+    }
+
+    public void setUsageCount(Integer usageCount) {
+        this.usageTimes = usageCount;
+    }
+
+    /**
+     * 最大使用次数(别名)
+     */
+    public Integer getMaxUsageCount() {
+        return maxUsageTimes;
+    }
+
+    public void setMaxUsageCount(Integer maxUsageCount) {
+        this.maxUsageTimes = maxUsageCount;
+    }
+
+    /**
+     * 储位(别名,为了兼容DashboardService)
+     */
+    public String getStorageLocation() {
+        return warehouseLocation;
+    }
+
+    public void setStorageLocation(String storageLocation) {
+        this.warehouseLocation = storageLocation;
     }
 
     /**

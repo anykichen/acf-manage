@@ -6,6 +6,7 @@ import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.client.j2se.BufferedImageLuminanceSource;
 import com.google.zxing.multi.qrcode.QRCodeMultiReader;
+import com.google.zxing.qrcode.decoder.ErrorCorrectionLevel;
 import org.springframework.stereotype.Service;
 
 import javax.imageio.ImageIO;
@@ -63,11 +64,11 @@ public class QrCodeServiceImpl implements QrCodeService {
 
         QRCodeMultiReader reader = new QRCodeMultiReader();
         Result[] results = reader.decodeMultiple(bitmap);
-        
+
         if (results != null && results.length > 0) {
             return results[0].getText();
         }
-        
+
         throw new RuntimeException("无法解析二维码");
     }
 }

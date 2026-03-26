@@ -47,6 +47,31 @@ public class AcfTransaction implements Serializable {
     private BigDecimal quantity;
 
     /**
+     * 料号
+     */
+    private String materialCode;
+
+    /**
+     * 操作人
+     */
+    private String operator;
+
+    /**
+     * 交易结果（SUCCESS-成功, FAILED-失败）
+     */
+    private String transactionResult;
+
+    /**
+     * 变更前数量
+     */
+    private BigDecimal beforeQuantity;
+
+    /**
+     * 变更后数量
+     */
+    private BigDecimal afterQuantity;
+
+    /**
      * 储位
      */
     private String warehouseLocation;
@@ -77,29 +102,42 @@ public class AcfTransaction implements Serializable {
     private Integer warmupDuration;
 
     /**
-     * 备注
-     */
-    private String remark;
-
-    /**
      * 交易时间
      */
     private LocalDateTime transactionTime;
 
     /**
-     * 创建时间
+     * 交易单号(别名)
      */
-    private LocalDateTime createTime;
+    public String getTransactionNumber() {
+        return transactionNo;
+    }
+
+    public void setTransactionNumber(String transactionNumber) {
+        this.transactionNo = transactionNumber;
+    }
 
     /**
-     * 更新时间
+     * 交易结果(别名)
      */
-    private LocalDateTime updateTime;
+    public String getResult() {
+        return transactionResult;
+    }
+
+    public void setResult(String result) {
+        this.transactionResult = result;
+    }
 
     /**
-     * 删除标记（0-正常, 1-删除）
+     * 操作人(别名)
      */
-    private Integer deleted;
+    public String getOperator() {
+        return operatorName;
+    }
+
+    public void setOperator(String operator) {
+        this.operatorName = operator;
+    }
 
     // 手动添加getter/setter以确保编译通过
     public String getTransactionType() {

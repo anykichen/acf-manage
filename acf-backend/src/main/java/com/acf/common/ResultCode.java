@@ -20,6 +20,11 @@ public enum ResultCode {
     /**
      * 失败
      */
+    FAILED(500, "操作失败"),
+
+    /**
+     * 失败
+     */
     ERROR(500, "操作失败"),
 
     /**

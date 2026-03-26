@@ -47,6 +47,26 @@ public class AcfAlert implements Serializable {
     private String alertLevel;
 
     /**
+     * 料号
+     */
+    private String materialCode;
+
+    /**
+     * 预警时间
+     */
+    private LocalDateTime alertTime;
+
+    /**
+     * 预警状态（PENDING-待处理, RESOLVED-已解决）
+     */
+    private String alertStatus;
+
+    /**
+     * 解决时间
+     */
+    private LocalDateTime resolvedTime;
+
+    /**
      * 是否已处理（1-是, 0-否）
      */
     private Integer isHandled;
@@ -65,6 +85,28 @@ public class AcfAlert implements Serializable {
      * 处理备注
      */
     private String handleRemark;
+
+    /**
+     * 状态(别名,为了兼容Service)
+     */
+    public String getStatus() {
+        return alertStatus;
+    }
+
+    public void setStatus(String status) {
+        this.alertStatus = status;
+    }
+
+    /**
+     * 预警时间(别名)
+     */
+    public LocalDateTime getAlertTime() {
+        return alertTime != null ? alertTime : createTime;
+    }
+
+    public void setAlertTime(LocalDateTime alertTime) {
+        this.alertTime = alertTime;
+    }
 
     /**
      * 创建时间

@@ -3,6 +3,7 @@ package com.acf.dto;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.Map;
 
 /**
  * 交易统计DTO
@@ -11,6 +12,31 @@ import java.math.BigDecimal;
  */
 @Data
 public class TransactionStatisticsDTO {
+
+    /**
+     * 总交易数
+     */
+    private long totalTransactions;
+
+    /**
+     * 总数量
+     */
+    private int totalQuantity;
+
+    /**
+     * 类型数量映射
+     */
+    private Map<String, Long> typeCountMap;
+
+    /**
+     * 类型数量映射
+     */
+    private Map<Integer, Integer> typeQuantityMap;
+
+    /**
+     * 失败交易数
+     */
+    private long failedTransactions;
 
     /**
      * 入库数量
